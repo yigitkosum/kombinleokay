@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_smorest import Api
 
-from routes.user import blp as UserBlueprint
-from routes.auth import auth_bp as AuthBlueprint
+from resources.user import blp as UserBlueprint
+from resources.auth import auth_bp as AuthBlueprint
 
 from db import db
 import models
