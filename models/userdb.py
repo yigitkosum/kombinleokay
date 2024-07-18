@@ -5,22 +5,13 @@ from db import db
 class UserModel(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-<<<<<<< Updated upstream
     username = db.Column(db.String(80), unique=True, )
-    password = db.Column(db.String(80) )
+    password = db.Column(db.String(80))
     name = db.Column(db.String(80) )
     surname = db.Column(db.String(80))
     email = db.Column(db.String(80) )
     clothes = db.relationship('ClotheModel', backref='owner', lazy='dynamic')
-=======
-    username = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(80), )
-    name = db.Column(db.String(80))
-    surname = db.Column(db.String(80))
-    email = db.Column(db.String(80))
-    clothes = db.relationship('ClotheModel', backref='owner', lazy='dynamic', overlaps="user")
 
->>>>>>> Stashed changes
 
 
 
