@@ -18,6 +18,10 @@ venv.bak/
 *.log
 dockore-compose.yml
 
+#migrations
+migrations/
+migrations/versions
+migrations/__pycache__
 #flask
 instance/
 .webassets-cache
