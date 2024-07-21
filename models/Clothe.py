@@ -20,7 +20,7 @@ class ClotheModel(db.Model):
             'size': self.size,
             'brand': self.brand,
             'type': self.type,
-            'sex': self.sex,
+            'sex': self.sex, 
         }
 
     @classmethod
@@ -32,5 +32,6 @@ class ClotheModel(db.Model):
             size=data.get('size'),
             brand=data.get('brand'),
             type=data.get('type'),
-            sex=data.get('sex')
+            sex=data.get('sex'),
+
         )

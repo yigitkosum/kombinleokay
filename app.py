@@ -4,6 +4,7 @@ from flask_smorest import Api
 
 from resources.user import blp as UserBlueprint
 from resources.auth import auth_bp as AuthBlueprint
+from s3file.s3_helper import s3_bp as S3Blueprint
 
 from db import db
 import models
@@ -46,6 +47,7 @@ def index():
 
 api.register_blueprint(UserBlueprint)
 api.register_blueprint(AuthBlueprint)
+api.register_blueprint(S3Blueprint)
 
 if __name__ == "__main__":
     app.run(debug=True)
