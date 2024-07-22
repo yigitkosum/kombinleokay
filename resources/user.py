@@ -54,6 +54,7 @@ def user_deleteItem(item_id):
 
     return {"message": "Item deleted successfully"}
 
+
 @blp.route("/user/getAllItems",methods = ["GET"])
 @jwt_required()
 def user_get_all_item():
@@ -85,3 +86,27 @@ def user_get_all_item():
     # Return the serialized list as a response
     return jsonify(clothes_list), 200
     
+
+@blp.route("/updateItem/<int:item_id>", methods=["PUT"])
+def user_updateItem(item_id):
+    data = request.json
+    clothe = ClotheModel.query.get_or_404(item_id)
+
+    color = data.get('color', clothe.color)
+    size = data.get('size', clothe.size)
+    brand = data.get('brand', clothe.brand)
+    type = data.get('type', clothe.type)
+    sex = data.get('sex', clothe.sex)
+
+    clothe.update(color=color, size=size, brand=brand, type=type, sex=sex)
+    db.session.commit()
+    return clothe.to_dict(),200
+
+
+@blp.route("/getItem/<int:item_id>", methods=["GET"])
+def user_getItem(item_id):
+    item = ClotheModel.query.get_or_404(item_id)
+    if item is None:
+        return {"message": "Item not found"}, 404
+    return item.to_dict(),200
+
