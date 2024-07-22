@@ -1,9 +1,13 @@
-from flask.views import MethodView
-from flask_smorest import Blueprint, abort
+from flask_smorest import Blueprint
 from db import db
+import datetime
 from models import UserModel
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from models import TokenBlacklist
 from flask import request, jsonify
+from passlib.hash import pbkdf2_sha256
+from flask_jwt_extended import (
+    JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jti, get_jwt
+)
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -21,7 +25,7 @@ def sign_up():
             return jsonify({'error': 'Username already taken'}), 400
 
 
-        user = UserModel(**user_data)
+        user = UserModel.from_dict(user_data)
         db.session.add(user)
         db.session.commit()
         return jsonify(user.to_dict()), 201  # Return the created user data
@@ -29,5 +33,25 @@ def sign_up():
 
 
 
+
+@auth_bp.route("/login", methods=["POST"])
+def user_login():
+    data = request.get_json()
+    user = UserModel.query.filter_by(email=data["email"]).first()
+    if user and pbkdf2_sha256.verify(data["password"], user.password):
+        access_token = create_access_token(identity=user.id, fresh=True)
+        return {"access_token": access_token}, 200
+    return {"message": "Invalid credentials"}, 401
+
+
+@auth_bp.route("/logout", methods=['DELETE'])
+@jwt_required()
+def logout():
+    jti = get_jwt()['jti']
+    now = datetime.datetime.utcnow()
+    blacklisted_token = TokenBlacklist(jti=jti, created_at=now)
+    db.session.add(blacklisted_token)
+    db.session.commit()
+    return jsonify(msg="Successfully logged out"), 200
 
 
