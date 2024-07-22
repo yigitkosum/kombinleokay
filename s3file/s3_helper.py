@@ -5,8 +5,8 @@ from io import BytesIO
 import os
 from dotenv import load_dotenv
 from db import db
-from models import ClotheModel
-
+from models import ClotheModel,UserModel
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 s3_bp = Blueprint('s3', __name__)
 
@@ -20,17 +20,25 @@ aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 #upload to S3
 @s3_bp.route('/upload', methods = ['POST'])
+@jwt_required()
 def upload_file():
-    
     file = request.files['file']
     
+    if not file:
+            return jsonify({'error': 'No file part'}), 400
+        
     if file.filename == ' ':
         return jsonify({'error':'No selected file'})
+    
+    
+    user_id = get_jwt_identity()
+    
+    print(user_id)
     
     s3.upload_fileobj(file,S3_BUCKET,file.filename)
     
     object_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{file.filename}"
-    
+
      # Yeni ClotheModel nesnesi oluşturma
     new_clothe = ClotheModel(
         image_url=object_url,
@@ -39,7 +47,7 @@ def upload_file():
         brand="",
         type="",
         sex="",
-        user_id=1  # Geçici olarak user_id = 1 kullanıyoruz, aslında bunu requestten veya sessiondan almanız gerekebilir
+        user_id= user_id # Geçici olarak user_id = 1 kullanıyoruz, aslında bunu requestten veya sessiondan almanız gerekebilir
     )
     db.session.add(new_clothe)
     db.session.commit()

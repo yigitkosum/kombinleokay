@@ -5,6 +5,9 @@ from models import TokenBlacklist
 from resources.user import blp as UserBlueprint
 from resources.auth import auth_bp as AuthBlueprint
 from s3file.s3_helper import s3_bp as S3Blueprint
+from dotenv import load_dotenv
+
+
 from db import db
 
 from flask_jwt_extended import (
@@ -15,6 +18,7 @@ from sqlalchemy import create_engine
 
 
 app = Flask(__name__)
+load_dotenv()
 
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.config["API_TITLE"] = "Stores REST API"

@@ -3,9 +3,9 @@ from db import db
 from models import UserModel
 from models import ClotheModel
 from passlib.hash import pbkdf2_sha256
-from flask_jwt_extended import create_access_token, jwt_required
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from constants import clotche_specifications as specs
-from flask import request
+from flask import request, jsonify
 
 blp = Blueprint("Users", __name__, description="Operations on users")
 
@@ -15,8 +15,6 @@ def GetAllUsers():
     users = UserModel.query.all()
     users_dict = [user.to_dict() for user in users]
     return users_dict
-
-
 
 
 
@@ -55,3 +53,35 @@ def user_deleteItem(item_id):
     db.session.commit()
 
     return {"message": "Item deleted successfully"}
+
+@blp.route("/user/getAllItems",methods = ["GET"])
+@jwt_required()
+def user_get_all_item():
+    # Get the current user's identity from the JWT token
+    current_user_id = get_jwt_identity()
+    
+    # Fetch the user from the database
+    user = UserModel.query.get(current_user_id)
+    
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+    
+    # Retrieve the list of clothes associated with the user
+    clothes = user.clothes  # Assuming 'clothes' is the relationship attribute in User model
+    
+    # Serialize the list of clothes to JSON format
+    clothes_list = []
+    for cloth in clothes:
+        clothes_list.append({
+           "id": cloth.id,
+            "color": cloth.color,
+            "size": cloth.size,
+            "brand": cloth.brand,
+            "type": cloth.type,
+            "sex": cloth.sex,
+            "image_url": cloth.image_url
+        })
+    
+    # Return the serialized list as a response
+    return jsonify(clothes_list), 200
+    
