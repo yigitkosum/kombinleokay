@@ -4,13 +4,13 @@ from flask_smorest import Blueprint
 from io import BytesIO
 import os
 from dotenv import load_dotenv
+from db import db
+from models import ClotheModel
 
 
 s3_bp = Blueprint('s3', __name__)
 
-#AWS Credentials
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+
 
 #S3 configuration
 S3_BUCKET = 'kombinle'
@@ -30,6 +30,19 @@ def upload_file():
     s3.upload_fileobj(file,S3_BUCKET,file.filename)
     
     object_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{file.filename}"
+    
+     # Yeni ClotheModel nesnesi oluşturma
+    new_clothe = ClotheModel(
+        image_url=object_url,
+        color="",
+        size="",
+        brand="",
+        type="",
+        sex="",
+        user_id=1  # Geçici olarak user_id = 1 kullanıyoruz, aslında bunu requestten veya sessiondan almanız gerekebilir
+    )
+    db.session.add(new_clothe)
+    db.session.commit()
     return redirect(url_for('index', image_url = object_url))
 
 

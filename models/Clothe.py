@@ -11,6 +11,7 @@ class ClotheModel(db.Model):
     sex = db.Column(db.String(50), default="Unisex")  # Male, Female , Unisex
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('UserModel', back_populates='clothes', lazy=True, overlaps="owner")
+    image_url = db.Column(db.String(255))
 
     def to_dict(self):
         return {
@@ -21,6 +22,7 @@ class ClotheModel(db.Model):
             'brand': self.brand,
             'type': self.type,
             'sex': self.sex, 
+            'image_url': self.image_url,
         }
 
     @classmethod
@@ -33,5 +35,5 @@ class ClotheModel(db.Model):
             brand=data.get('brand'),
             type=data.get('type'),
             sex=data.get('sex'),
-
+            image_url=data.get('image_url')
         )

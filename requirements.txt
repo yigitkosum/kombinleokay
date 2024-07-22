@@ -9,3 +9,4 @@ PgAdmin4
 Flask-Migrate
 flask-jwt-extended
 passlib
+boto3
