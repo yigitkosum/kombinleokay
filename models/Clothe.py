@@ -37,3 +37,15 @@ class ClotheModel(db.Model):
             sex=data.get('sex'),
             image_url=data.get('image_url')
         )
+
+    def update(self, color=None, size=None, brand=None, type=None, sex=None):
+        if color is not None:
+            self.color = color
+        if size is not None:
+            self.size = size
+        if brand is not None:
+            self.brand = brand
+        if type is not None:
+            self.type = type
+        if sex is not None:
+            self.sex = sex
