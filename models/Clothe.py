@@ -1,17 +1,17 @@
 from db import db
 
-
 class ClotheModel(db.Model):
     __tablename__ = 'clothes'
-    id = db.Column(db.Integer, primary_key=True)  # Bize özel
+    id = db.Column(db.Integer, primary_key=True)
     color = db.Column(db.String(100))
-    size = db.Column(db.String(50))  # Oversize, Slim, Regular
+    size = db.Column(db.String(50))
     brand = db.Column(db.String(50), default="Default")
-    type = db.Column(db.String(50))  # Tişört, pantolon, vs vs
-    sex = db.Column(db.String(50), default="Unisex")  # Male, Female , Unisex
+    type = db.Column(db.String(50))
+    sex = db.Column(db.String(50), default="Unisex")
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('UserModel', back_populates='clothes', lazy=True, overlaps="owner")
     image_url = db.Column(db.String(255))
+    posts = db.relationship('PostModel', secondary="post_clothes", back_populates='clothes', lazy='dynamic')
 
     def to_dict(self):
         return {
@@ -21,7 +21,7 @@ class ClotheModel(db.Model):
             'size': self.size,
             'brand': self.brand,
             'type': self.type,
-            'sex': self.sex, 
+            'sex': self.sex,
             'image_url': self.image_url,
         }
 

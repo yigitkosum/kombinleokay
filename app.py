@@ -1,13 +1,13 @@
-from flask import Flask,jsonify
+from flask import Flask, jsonify
 from flask_smorest import Api
 
 from models import TokenBlacklist
 from resources.user import blp as UserBlueprint
 from resources.auth import auth_bp as AuthBlueprint
 from s3file.s3_helper import s3_bp as S3Blueprint
+from resources.socialmedia import blp as SocialMediaBlueprint
 
 from dotenv import load_dotenv
-
 
 from db import db
 
@@ -16,7 +16,6 @@ from flask_jwt_extended import (
 )
 from flask_migrate import Migrate
 from sqlalchemy import create_engine
-
 
 app = Flask(__name__)
 load_dotenv()
@@ -57,10 +56,10 @@ def index():
     return "İlk Sayfa"
 
 
+api.register_blueprint(SocialMediaBlueprint)
 api.register_blueprint(UserBlueprint)
 api.register_blueprint(AuthBlueprint)
 api.register_blueprint(S3Blueprint)
-
 
 
 @jwt.token_in_blocklist_loader
@@ -68,6 +67,7 @@ def check_if_token_is_revoked(jwt_header, jwt_payload):
     jti = jwt_payload['jti']
     token = TokenBlacklist.query.filter_by(jti=jti).first()
     return token is not None
+
 
 if __name__ == "__main__":
     app.run(debug=True)
