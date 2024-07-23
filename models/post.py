@@ -19,4 +19,5 @@ class PostModel(db.Model):
             'user_id': self.user_id,
             'clothes': [clothe.to_dict() for clothe in self.clothes],
             'comments': [comment.to_dict() for comment in self.comments.all()]
+            #buraya 'author' = self.author yazınca internal server error alıyoz ama direkt tüm server sıkıntı yaşıyo getAllUsers fln da çalışmıo
         }

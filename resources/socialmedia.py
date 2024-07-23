@@ -5,6 +5,8 @@ from models import UserModel
 from models import TokenBlacklist
 from models.follow import FollowModel
 from flask import request, jsonify
+from models.post import PostModel
+from models.Clothe import ClotheModel
 from flask_jwt_extended import (
     JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jti, get_jwt
 )
@@ -73,6 +75,44 @@ def remove_from_friens():
     return jsonify({'message': 'Successfully unfollowed'}), 200
     
 
+@blp.route("/sharePost",methods = {"POST"}) #bu methodda clothes ve comments kısmı nasıl olacak. comments okey makeCommentten post id yapılır
+@jwt_required()                             # clothes nasıl yapılacak aqq
+def share_post():
+    data = request.get_json()
+    user_id = get_jwt_identity()
+
+    content = data.get('content')
+    clothes = data.get('clothes',[]) #list olduğu için? bunsuz da olur mu acaba
+    
+    if not content:
+        return jsonify({'message': 'Content is required'}), 400
+    
+    user = UserModel.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    
+    author = data.get('author')
+    
+    comments = data.get('comments',[]) #yine list oldugu icin yaprm da gerek var mı kontrol edilmeli
+    
+    
+    post = PostModel(content=content, user_id = user_id)
+    
+    if clothes:
+        for clothe_id in clothes:
+            clothe = ClotheModel.query.get(clothe_id)
+            if clothe:
+                post.clothes.append(clothe)
+            else:
+                #eğer clothe yoksa sıkıntılı durum napıp nedip olmayan clothe girmemeli. şuan girmez gibi ama ilrede sıkıntı çıkarsa diye
+                continue
+    
+    db.session.add(post)
+    db.session.commit()
+    
+    return jsonify(post.to_dict()), 201
+    
+    
 
 
 
