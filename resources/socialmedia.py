@@ -17,15 +17,16 @@ def socialmedia():
     pass #Buraya akış gelecek, ana sayfa
 
 @blp.route("/addFriend", methods=["POST"])
+@jwt_required()
 def friendRequest():
     data = request.get_json()
-    follower_id = data.get('follower_id')
+    follower_id = get_jwt_identity()
     followed_id = data.get('followed_id')
 
     if not follower_id or not followed_id:
         return jsonify({'message': 'Both follower_id and followed_id are required'}), 400
 
-    follower = UserModel.query.get(follower_id)
+    follower = get_jwt_identity()
     followed = UserModel.query.get(followed_id)
 
     if not follower or not followed:
@@ -41,9 +42,36 @@ def friendRequest():
     db.session.add(follow)
     db.session.commit()
 
-    return {follow.to_dict(), 201}
+    return jsonify({'message': 'Successfully followed'}), 200
 
+@blp.route("/unfollowFriend", methods = ["DELETE"])
+@jwt_required()
+def remove_from_friens():
+    data = request.get_json()
+    follower_id = get_jwt_identity()
+    followed_id = data.get('followed_id')
+    
+    if not follower_id or not followed_id:
+        return jsonify({'message': 'Both follower_id and followed_id are required'}), 400
 
+    follower = UserModel.query.get(follower_id)
+    followed = UserModel.query.get(followed_id)
+    
+    
+    if not follower or not followed:
+        return jsonify({'message': 'User not found'}), 404
+    
+    #checking are they following
+    follow = FollowModel.query.filter_by(follower_id = follower_id, followed_id = followed_id).first()
+    
+    if not follow:
+        return jsonify({'message': 'Follow relationship not found'}), 404
+    
+    #delete follow relation
+    db.session.delete(follow)
+    db.session.commit()
+    return jsonify({'message': 'Successfully unfollowed'}), 200
+    
 
 
 

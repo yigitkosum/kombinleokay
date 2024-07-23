@@ -48,15 +48,7 @@ def upload_file():
     )
     db.session.add(new_clothe)
     db.session.commit()
-    return redirect(url_for('index', image_url = object_url))
-
-
-@s3_bp.route('/uploadImage')
-def index():
-    image_url = request.args.get('image_url')
-    # Extract filename from URL if needed
-    image_filename = image_url.split('/')[-1] if image_url else None
-    return render_template('index.html', image_url=image_url, image_filename=image_filename)
+    return jsonify(new_clothe.to_dict())
 
 
 @s3_bp.route('/image/<filename>')
