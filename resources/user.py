@@ -55,7 +55,7 @@ def user_deleteItem(item_id):
     return {"message": "Item deleted successfully"}
 
 
-@blp.route("/user/getAllItems",methods = ["GET"])
+@blp.route("/user/getAllItems",methods=["GET"])
 @jwt_required()
 def user_get_all_item():
     # Get the current user's identity from the JWT token

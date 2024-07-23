@@ -2,10 +2,8 @@ from flask import request, jsonify, render_template, redirect, url_for, send_fil
 import boto3
 from flask_smorest import Blueprint
 from io import BytesIO
-import os
-from dotenv import load_dotenv
 from db import db
-from models import ClotheModel,UserModel
+from models import ClotheModel
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 s3_bp = Blueprint('s3', __name__)
@@ -18,7 +16,7 @@ aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 
 #upload to S3
-@s3_bp.route('/upload', methods = ['POST'])
+@s3_bp.route('/upload', methods=['POST'])
 @jwt_required()
 def upload_file():
     file = request.files['file']
@@ -46,7 +44,7 @@ def upload_file():
         brand="",
         type="",
         sex="",
-        user_id= user_id # Geçici olarak user_id = 1 kullanıyoruz, aslında bunu requestten veya sessiondan almanız gerekebilir
+        user_id=user_id
     )
     db.session.add(new_clothe)
     db.session.commit()
