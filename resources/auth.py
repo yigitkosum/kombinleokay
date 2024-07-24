@@ -1,12 +1,11 @@
 from flask_smorest import Blueprint
 from db import db
 import datetime
-from models import UserModel
-from models import TokenBlacklist
+from models import UserModel, TokenBlacklist
 from flask import request, jsonify
 from passlib.hash import pbkdf2_sha256
 from flask_jwt_extended import (
-    JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jti, get_jwt
+    create_access_token,jwt_required, current_user, get_jwt
 )
 
 auth_bp = Blueprint('auth', __name__)
@@ -24,15 +23,10 @@ def sign_up():
         if existing_user:
             return jsonify({'error': 'Username already taken'}), 400
 
-
         user = UserModel.from_dict(user_data)
         db.session.add(user)
         db.session.commit()
         return jsonify(user.to_dict()), 201  # Return the created user data
-
-
-
-
 
 @auth_bp.route("/login", methods=["POST"])
 def user_login():
@@ -42,7 +36,6 @@ def user_login():
         access_token = create_access_token(identity=user.id, fresh=True)
         return {"access_token": access_token}, 200
     return {"message": "Invalid credentials"}, 401
-
 
 @auth_bp.route("/logout", methods=['DELETE'])
 @jwt_required()
