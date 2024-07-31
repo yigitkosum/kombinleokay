@@ -50,3 +50,8 @@ class UserModel(db.Model):
             password=pbkdf2_sha256.hash(data.get('password'))
         )
         return user
+
+
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    return UserModel.query.filter_by(id=identity).one_or_none()

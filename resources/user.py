@@ -2,8 +2,7 @@ from flask_smorest import Blueprint
 from db import db
 from models import UserModel
 from models import ClotheModel
-from passlib.hash import pbkdf2_sha256
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, current_user
 from constants import clotche_specifications as specs
 from flask import request, jsonify
 
@@ -17,8 +16,9 @@ def GetAllUsers():
     return users_dict
 
 
-
+# Bu şu an için işlevsiz
 @blp.route("/user/addItem", methods=["POST"])
+@jwt_required()
 def user_addItem():
     item_data = request.json
     required_fields = ["color", "type", "user_id"]
@@ -38,7 +38,7 @@ def user_addItem():
     db.session.commit()
     return new_item.to_dict()
 
-
+# DOKUNULMADI DURSUN BAKACAGIM
 @blp.route("/user/deleteItem/<int:item_id>", methods=["DELETE"])
 def user_deleteItem(item_id):
     # Find the item by its ID
@@ -55,11 +55,11 @@ def user_deleteItem(item_id):
     return {"message": "Item deleted successfully"}
 
 
-@blp.route("/user/getAllItems",methods=["GET"])
+@blp.route("/getAllItems",methods=["GET"])
 @jwt_required()
 def user_get_all_item():
     # Get the current user's identity from the JWT token
-    current_user_id = get_jwt_identity()
+    current_user_id = current_user.id
     
     # Fetch the user from the database
     user = UserModel.query.get(current_user_id)
@@ -88,6 +88,7 @@ def user_get_all_item():
     
 
 @blp.route("/updateItem/<int:item_id>", methods=["PUT"])
+@jwt_required()
 def user_updateItem(item_id):
     data = request.json
     clothe = ClotheModel.query.get_or_404(item_id)
@@ -104,6 +105,7 @@ def user_updateItem(item_id):
 
 
 @blp.route("/getItem/<int:item_id>", methods=["GET"])
+@jwt_required()
 def user_getItem(item_id):
     item = ClotheModel.query.get_or_404(item_id)
     if item is None:
