@@ -1,4 +1,4 @@
-from flask import request, jsonify, render_template, redirect, url_for, send_file
+from flask import request, jsonify, send_file
 import boto3
 from flask_smorest import Blueprint
 from io import BytesIO
