@@ -7,5 +7,10 @@ flask-sqlalchemy
 psycopg2-binary==2.9.7
 PgAdmin4
 Flask-Migrate
+<<<<<<< Updated upstream
+passlib
+=======
 flask-jwt-extended
 passlib
+boto3
+>>>>>>> Stashed changes

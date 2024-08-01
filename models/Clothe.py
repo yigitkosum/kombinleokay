@@ -48,4 +48,8 @@ class ClotheModel(db.Model):
         if type is not None:
             self.type = type
         if sex is not None:
+<<<<<<< Updated upstream
             self.sex = sex
+=======
+            self.sex = sex
+>>>>>>> Stashed changes

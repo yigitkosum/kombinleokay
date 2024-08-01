@@ -16,7 +16,11 @@ def GetAllUsers():
     return users_dict
 
 
+<<<<<<< Updated upstream
 # Bu şu an için işlevsiz
+=======
+
+>>>>>>> Stashed changes
 @blp.route("/user/addItem", methods=["POST"])
 @jwt_required()
 def user_addItem():
@@ -56,8 +60,10 @@ def user_deleteItem(item_id):
 
 
 @blp.route("/getAllItems",methods=["GET"])
-@jwt_required()
 def user_get_all_item():
+<<<<<<< Updated upstream
+@blp.route("/getAllItems/<user_id>",methods=["GET"])
+def user_get_all_item(user_id):
     # Get the current user's identity from the JWT token
     current_user_id = current_user.id
     
@@ -87,6 +93,8 @@ def user_get_all_item():
     return jsonify(clothes_list), 200
     
 
+=======
+>>>>>>> Stashed changes
 @blp.route("/updateItem/<int:item_id>", methods=["PUT"])
 @jwt_required()
 def user_updateItem(item_id):
