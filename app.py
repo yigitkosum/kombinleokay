@@ -5,6 +5,8 @@ from resources.auth import auth_bp as AuthBlueprint
 from s3file.s3_helper import s3_bp as S3Blueprint
 from resources.socialmedia import blp as SocialMediaBlueprint
 from dotenv import load_dotenv
+from flask_jwt_extended import JWTManager
+
 
 from db import db
 from flask_migrate import Migrate
@@ -12,7 +14,8 @@ from sqlalchemy import create_engine
 from models.userdb import user_lookup_callback
 
 app = Flask(__name__)
-load_dotenv()
+jwt = JWTManager(app);
+load_dotenv()   
 
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.config["API_TITLE"] = "Stores REST API"
