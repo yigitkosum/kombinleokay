@@ -37,6 +37,21 @@ def user_login():
         return {"access_token": access_token}, 200
     return {"message": "Invalid credentials"}, 401
 
+@auth_bp.route("/deleteUser", methods=["DELETE"])
+@jwt_required()
+def delete_user():
+    user_id = current_user.id
+    user = UserModel.query.get(user_id)
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({"message": "User successfully deleted"}), 200
+
+
 @auth_bp.route("/logout", methods=['DELETE'])
 @jwt_required()
 def logout():
