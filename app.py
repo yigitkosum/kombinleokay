@@ -14,7 +14,9 @@ from sqlalchemy import create_engine
 from models.userdb import user_lookup_callback
 
 app = Flask(__name__)
-jwt = JWTManager(app);
+
+app.config['JWT_SECRET_KEY'] = '06mrtnsrn'
+jwt = JWTManager(app)
 load_dotenv()   
 
 app.config["PROPAGATE_EXCEPTIONS"] = True
