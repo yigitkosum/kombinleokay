@@ -53,7 +53,6 @@ def delete_user():
 
 
 @auth_bp.route("/deleteUser/<int:id>", methods=["DELETE"])
-@jwt_required()
 def delete_user(id):
     user = UserModel.query.get(id)
 
@@ -64,6 +63,7 @@ def delete_user(id):
     db.session.commit()
 
     return jsonify({"message": f"User with ID {id} successfully deleted"}), 200
+
 
 @auth_bp.route("/logout", methods=['DELETE'])
 @jwt_required()
