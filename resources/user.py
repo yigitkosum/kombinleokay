@@ -108,3 +108,10 @@ def user_getItem(item_id):
         return {"message": "Item not found"}, 404
     return item.to_dict(),200
 
+@blp.route("/user/profile", methods=["GET"])
+@jwt_required()
+def user_profile():
+    user = UserModel.getCurrentUser()
+    if user is None:
+        return {"message": "User not found"}, 404
+    return user.to_dict(), 200  
