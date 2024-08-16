@@ -12,7 +12,7 @@ class ClotheModel(db.Model):
     user = db.relationship('UserModel', back_populates='clothes', lazy=True, overlaps="owner")
     image_url = db.Column(db.String(255))
     posts = db.relationship('PostModel', secondary="post_clothes", back_populates='clothes', lazy='dynamic')
-
+    
     def to_dict(self):
         return {
             'user_id': self.user_id,

@@ -4,9 +4,7 @@ import datetime
 from models import UserModel, TokenBlacklist
 from flask import request, jsonify
 from passlib.hash import pbkdf2_sha256
-from flask_jwt_extended import (
-    create_access_token,jwt_required, current_user, get_jwt, JWTManager
-)
+
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -19,10 +17,7 @@ def sign_up():
         username = user_data.get('username')
 
         # Check if the username already exists
-        existing_user = UserModel.query.filter_by(username=username).first()
-        if existing_user:
-            return jsonify({'error': 'Username already taken'}), 400
-
+        
         user = UserModel.from_dict(user_data)
         db.session.add(user)
         db.session.commit()
@@ -33,14 +28,11 @@ def user_login():
     data = request.get_json()
     user = UserModel.query.filter_by(email=data["email"]).first()
     if user and pbkdf2_sha256.verify(data["password"], user.password):
-        access_token = create_access_token(identity=user.id, fresh=True)
-        return {"access_token": access_token}, 200
+       return {"message": "login succeed"}, 401
     return {"message": "Invalid credentials"}, 401
 
-@auth_bp.route("/deleteUser", methods=["DELETE"])
-@jwt_required()
-def delete_user():
-    user_id = current_user.id
+@auth_bp.route("/deleteUser/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id): 
     user = UserModel.query.get(user_id)
 
     if not user:
@@ -52,27 +44,6 @@ def delete_user():
     return jsonify({"message": "User successfully deleted"}), 200
 
 
-@auth_bp.route("/deleteUser/<int:id>", methods=["DELETE"])
-def delete_user(id):
-    user = UserModel.query.get(id)
-
-    if not user:
-        return jsonify({"message": "User not found"}), 404
-
-    db.session.delete(user)
-    db.session.commit()
-
-    return jsonify({"message": f"User with ID {id} successfully deleted"}), 200
-
-
 @auth_bp.route("/logout", methods=['DELETE'])
-@jwt_required()
 def logout():
-    jti = get_jwt()['jti']
-    now = datetime.datetime.utcnow()
-    blacklisted_token = TokenBlacklist(jti=jti, created_at=now)
-    db.session.add(blacklisted_token)
-    db.session.commit()
     return jsonify(msg="Successfully logged out"), 200
-
-

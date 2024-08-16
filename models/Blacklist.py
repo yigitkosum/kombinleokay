@@ -8,4 +8,3 @@ class TokenBlacklist(db.Model):
 
 
 
-

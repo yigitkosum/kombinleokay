@@ -1,5 +1,6 @@
 from db import db
 from passlib.hash import pbkdf2_sha256
+from sqlalchemy.dialects.postgresql import ARRAY
 
 class UserModel(db.Model):
     __tablename__ = "users"
@@ -25,7 +26,9 @@ class UserModel(db.Model):
         lazy='dynamic',
         cascade='all, delete-orphan'
     )
-
+    combinations = db.relationship('CombinationModel', back_populates='user', lazy='dynamic')
+    survey = db.Column(ARRAY(db.Float), default=[])
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -36,7 +39,9 @@ class UserModel(db.Model):
             'clothes': [clothe.to_dict() for clothe in self.clothes.all()],
             'posts': [post.to_dict() for post in self.posts.all()],
             'followers': [follower.follower_id for follower in self.followers],
-            'following': [followed.followed_id for followed in self.following]
+            'following': [followed.followed_id for followed in self.following],
+            'combinations': [combination.to_dict() for combination in self.combinations.all()],
+            'survey' : self.survey
         }
 
     @classmethod
@@ -48,10 +53,7 @@ class UserModel(db.Model):
             surname=data.get('surname'),
             email=data.get('email'),
             password=pbkdf2_sha256.hash(data.get('password'))
+            
         )
         return user
-
-
-def user_lookup_callback(_jwt_header, jwt_data):
-    identity = jwt_data["sub"]
-    return UserModel.query.filter_by(id=identity).one_or_none()
+    

@@ -2,21 +2,16 @@ from flask import Flask
 from flask_smorest import Api
 from resources.user import blp as UserBlueprint
 from resources.auth import auth_bp as AuthBlueprint
+from resources.combination import blp as CombinationBlueprint
 from s3file.s3_helper import s3_bp as S3Blueprint
 from resources.socialmedia import blp as SocialMediaBlueprint
 from dotenv import load_dotenv
-from flask_jwt_extended import JWTManager
-
-
 from db import db
 from flask_migrate import Migrate
 from sqlalchemy import create_engine
-from models.userdb import user_lookup_callback
 
 app = Flask(__name__)
 
-app.config['JWT_SECRET_KEY'] = '06mrtnsrn'
-jwt = JWTManager(app)
 load_dotenv()   
 
 app.config["PROPAGATE_EXCEPTIONS"] = True
@@ -47,13 +42,14 @@ api = Api(app)
 
 @app.route("/")
 def index():
-    return "İlk Sayfa"
+    return "Ilk Sayfa" 
 
 
 api.register_blueprint(SocialMediaBlueprint)
 api.register_blueprint(UserBlueprint)
 api.register_blueprint(AuthBlueprint)
 api.register_blueprint(S3Blueprint)
+api.register_blueprint(CombinationBlueprint)
 
 
 

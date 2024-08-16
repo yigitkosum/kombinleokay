@@ -4,13 +4,10 @@ from flask_smorest import Blueprint
 from io import BytesIO
 from db import db
 from models import ClotheModel
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 s3_bp = Blueprint('s3', __name__)
 
-
-
-
+    
 #S3 configuration
 S3_BUCKET = 'kombinle'
 s3 = boto3.client('s3',aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -18,9 +15,8 @@ aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 
 #upload to S3
-@s3_bp.route('/upload', methods=['POST'])
-@jwt_required()
-def upload_file():
+@s3_bp.route('/upload/<int:user_id>', methods=['POST'])
+def upload_file(user_id):
     file = request.files['file']
     
     if not file:
@@ -28,9 +24,6 @@ def upload_file():
         
     if file.filename == ' ':
         return jsonify({'error':'No selected file'})
-    
-    
-    user_id = get_jwt_identity()
     
     print(user_id)
     

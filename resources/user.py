@@ -1,13 +1,42 @@
 from flask_smorest import Blueprint
 from db import db
 from models import UserModel
+from models import CombinationModel
 from models import ClotheModel
-from flask_jwt_extended import jwt_required, current_user
 from constants import clotche_specifications as specs
 from flask import request, jsonify
 
+
+
 blp = Blueprint("Users", __name__, description="Operations on users")
 
+
+
+@blp.route("/surveyRatingInsertion", methods=["POST"])
+def surveyRatings():
+    data = request.json
+
+    # user_id'yi request body'den alıyoruz
+    user_id = data.get("user_id")
+    
+    if not user_id:
+        return {"message": "User ID is required"}, 400
+
+    # Kullanıcıyı veritabanından bulalım
+    user = UserModel.query.get(user_id)
+
+    if user is None:
+        return {"message": "User not found"}, 404
+
+    # Survey verilerini data'dan alıyoruz
+    survey = [data.get("0"), data.get("1"), data.get("2"), data.get("3"), data.get("4"), 
+              data.get("5"), data.get("6"), data.get("7"), data.get("8"), data.get("9")]
+
+    # Kullanıcının survey verilerini güncelleyelim
+    user.survey = survey
+    db.session.commit()
+
+    return {"message": "Survey ratings inserted successfully"}
 
 @blp.route("/getAllUsers")
 def GetAllUsers():
@@ -16,9 +45,9 @@ def GetAllUsers():
     return users_dict
 
 
-@blp.route("/user/addItem", methods=["POST"])
-@jwt_required()
-def user_addItem():
+@blp.route("/user/<int:user_id>/addItem", methods=["POST"])
+
+def user_addItem(user_id):
     item_data = request.json
     required_fields = ["color", "type", "user_id"]
     for field in required_fields:
@@ -35,7 +64,128 @@ def user_addItem():
     new_item = ClotheModel.from_dict(item_data)
     db.session.add(new_item)
     db.session.commit()
+
+    
+    create_combinations(new_item)
+
     return new_item.to_dict()
+    
+def create_combinations(new_item):
+
+    user = UserModel.query.get(new_item.user_id)
+    
+  
+    if new_item.type == 'T-shirt':
+        bottoms = user.clothes.filter_by(type='Pant').all()
+        shoes = user.clothes.filter_by(type='Shoe').all()
+        jackets = user.clothes.filter_by(type='Jacket').all()
+
+        for bottom in bottoms:
+            for shoe in shoes:
+                combination_data = {
+                    'user_id': user.id,
+                    'top_id': new_item.id,
+                    'bottom_id': bottom.id,
+                    'shoe_id': shoe.id,
+                    'jacket_id': None,
+                    'rating' : None
+                }
+                combination = CombinationModel.from_dict(combination_data)
+                db.session.add(combination)
+
+                for jacket in jackets:
+                    combination_with_jacket_data = {
+                        'user_id': user.id,
+                        'top_id': new_item.id,
+                        'bottom_id': bottom.id,
+                        'shoe_id': shoe.id,
+                        'jacket_id': jacket.id,
+                        'rating' : None
+                    }
+                    combination_with_jacket = CombinationModel.from_dict(combination_with_jacket_data)
+                    db.session.add(combination_with_jacket)
+
+    elif new_item.type == 'Pant':
+        tops = user.clothes.filter_by(type='T-shirt').all()
+        shoes = user.clothes.filter_by(type='Shoe').all()
+        jackets = user.clothes.filter_by(type='Jacket').all()
+
+        for top in tops:
+            for shoe in shoes:
+                combination_data = {
+                    'user_id': user.id,
+                    'top_id': top.id,
+                    'bottom_id': new_item.id,
+                    'shoe_id': shoe.id,
+                    'jacket_id': None,
+                    'rating' : None
+                }
+                combination = CombinationModel.from_dict(combination_data)
+                db.session.add(combination)
+
+                for jacket in jackets:
+                    combination_with_jacket_data = {
+                        'user_id': user.id,
+                        'top_id': top.id,
+                        'bottom_id': new_item.id,
+                        'shoe_id': shoe.id,
+                        'jacket_id': jacket.id,
+                        'rating' : None
+                    }
+                    combination_with_jacket = CombinationModel.from_dict(combination_with_jacket_data)
+                    db.session.add(combination_with_jacket)
+
+    elif new_item.type == 'Shoe':
+        tops = user.clothes.filter_by(type='T-shirt').all()
+        bottoms = user.clothes.filter_by(type='Pant').all()
+        jackets = user.clothes.filter_by(type='Jacket').all()
+
+        for top in tops:
+            for bottom in bottoms:
+                combination_data = {
+                    'user_id': user.id,
+                    'top_id': top.id,
+                    'bottom_id': bottom.id,
+                    'shoe_id': new_item.id,
+                    'jacket_id': None,
+                    'rating' : None
+                }
+                combination = CombinationModel.from_dict(combination_data)
+                db.session.add(combination)
+
+                for jacket in jackets:
+                    combination_with_jacket_data = {
+                        'user_id': user.id,
+                        'top_id': top.id,
+                        'bottom_id': bottom.id,
+                        'shoe_id': new_item.id,
+                        'jacket_id': jacket.id,
+                        'rating' : None
+                    }
+                    combination_with_jacket = CombinationModel.from_dict(combination_with_jacket_data)
+                    db.session.add(combination_with_jacket)
+
+    elif new_item.type == 'Jacket':
+        tops = user.clothes.filter_by(type='T-shirt').all()
+        bottoms = user.clothes.filter_by(type='Pant').all()
+        shoes = user.clothes.filter_by(type='Shoe').all()
+
+        for top in tops:
+            for bottom in bottoms:
+                for shoe in shoes:
+                    combination_data = {
+                        'user_id': user.id,
+                        'top_id': top.id,
+                        'bottom_id': bottom.id,
+                        'shoe_id': shoe.id,
+                        'jacket_id': new_item.id,
+                        'rating' : None
+                    }
+                    combination = CombinationModel.from_dict(combination_data)
+                    db.session.add(combination)
+
+    db.session.commit()
+
 
 # DOKUNULMADI DURSUN BAKACAGIM
 @blp.route("/user/deleteItem/<int:item_id>", methods=["DELETE"])
@@ -56,10 +206,9 @@ def user_deleteItem(item_id):
 @blp.route("/getAllItems/<user_id>",methods=["GET"])
 def user_get_all_item(user_id):
     # Get the current user's identity from the JWT token
-    current_user_id = current_user.id
     
     # Fetch the user from the database
-    user = UserModel.query.get(current_user_id)
+    user = UserModel.query.get(user_id)
     
     if not user:
         return jsonify({"msg": "User not found"}), 404
@@ -84,7 +233,6 @@ def user_get_all_item(user_id):
     return jsonify(clothes_list), 200
 
 @blp.route("/updateItem/<int:item_id>", methods=["PUT"])
-@jwt_required()
 def user_updateItem(item_id):
     data = request.json
     clothe = ClotheModel.query.get_or_404(item_id)
@@ -99,21 +247,49 @@ def user_updateItem(item_id):
     db.session.commit()
     return clothe.to_dict(),200
 
+@blp.route("/updateCombinationRating/<int:combination_id>", methods=["PUT"])
+def update_combination_rating(combination_id):
+    # Get the request data
+    data = request.json
+    
+    # Validate that the 'rating' field is present in the request data
+    rating = data.get('rating')
+    if rating is None:
+        return {"message": "'rating' is required"}, 400
+
+    # Fetch the combination from the database
+    combination = CombinationModel.query.get_or_404(combination_id)
+    
+    # Update the rating of the combination
+    combination.rating = rating
+    db.session.commit()
+    
+    return combination.to_dict(), 200
+
 
 @blp.route("/getItem/<int:item_id>", methods=["GET"])
-@jwt_required()
 def user_getItem(item_id):
     item = ClotheModel.query.get_or_404(item_id)
     if item is None:
         return {"message": "Item not found"}, 404
     return item.to_dict(),200
 
-@blp.route("/user/profile", methods=["GET"])
-@jwt_required()
-def user_profile():
-    user = current_user
 
-    if not user:
-        return {"message": "User not found"}, 404
+######
+
+@blp.route("/getCombination/<int:combination_id>", methods=["GET"])
+def user_getCombination(combination_id):
+    item = CombinationModel.query.get_or_404(combination_id)
+    if item is None:
+        return {"message": "Item not found"}, 404
+    return item.to_dict(),200
+
+
+@blp.route("/user/profile/<int:user_id>", methods = ["GET"])
+def get_profile(user_id):
+    user = UserModel.query.get(user_id)
     
-    return user.to_dict(), 200
+    if user is None:
+        return {"message": "user not found"}, 404
+     
+    return user.to_dict(),200
