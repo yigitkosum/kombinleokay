@@ -22,14 +22,14 @@ def sign_up():
         db.session.add(user)
         db.session.commit()
         return jsonify(user.to_dict()), 201  # Return the created user data
-
 @auth_bp.route("/login", methods=["POST"])
 def user_login():
     data = request.get_json()
     user = UserModel.query.filter_by(email=data["email"]).first()
     if user and pbkdf2_sha256.verify(data["password"], user.password):
-       return {"message": "login succeed"}, 401
+        return {"message": "login succeeded", "user_id": user.id}, 200
     return {"message": "Invalid credentials"}, 401
+
 
 @auth_bp.route("/deleteUser/<int:user_id>", methods=["DELETE"])
 def delete_user(user_id): 
