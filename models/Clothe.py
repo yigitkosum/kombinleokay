@@ -11,6 +11,7 @@ class ClotheModel(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('UserModel', back_populates='clothes', lazy=True, overlaps="owner")
     image_url = db.Column(db.String(255))
+    vote = db.Column(db.Boolean, default=False)
     
     def to_dict(self):
         return {
@@ -21,6 +22,7 @@ class ClotheModel(db.Model):
             'brand': self.brand,
             'type': self.type,
             'sex': self.sex,
+            'vote': self.vote,
             'image_url': self.image_url,
         }
 

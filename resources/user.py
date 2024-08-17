@@ -293,3 +293,27 @@ def get_profile(user_id):
         return {"message": "user not found"}, 404
      
     return user.to_dict(),200
+
+
+
+@blp.route("/updateVote/<int:item_id>", methods=["PUT"])
+def user_updateVote(item_id):
+    data = request.json
+    vote = data.get('vote')
+    if vote is None:
+        return {"message": "'vote' is required"}, 400
+
+    item = ClotheModel.query.get_or_404(item_id)
+    if item is None:
+        return {"message": "Item not found"}, 404
+    if vote == 'true':
+        item.vote = True
+    else:
+        item.vote = False
+
+    db.session.commit()
+    return item.to_dict(),200
+
+
+
+

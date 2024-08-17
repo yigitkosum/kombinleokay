@@ -80,8 +80,6 @@ def remove_from_friens():
     return jsonify({'message': 'Successfully unfollowed'}), 200
 
 
-
-
 @blp.route("/sharePost/<int:user_id>", methods=["POST"])
 def share_post(user_id):
     content = request.form.get('content')
