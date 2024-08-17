@@ -6,9 +6,20 @@ from models.follow import FollowModel
 from flask import request, jsonify
 from models.post import PostModel
 from models.Clothe import ClotheModel
+import boto3
+import uuid
+from models import UserModel, PostModel, ClotheModel
+from flask_smorest import Blueprint
 
 blp = Blueprint("SocialMedia", __name__, description="Operations on social media")
 
+#s3 file upload
+
+
+
+S3_BUCKET = 'kombinle'
+s3 = boto3.client('s3',aws_access_key_id=AWS_ACCESS_KEY_ID,
+aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 @blp.route("/get_timeline", methods=["GET"])
 def socialmedia():
@@ -69,31 +80,37 @@ def remove_from_friens():
     return jsonify({'message': 'Successfully unfollowed'}), 200
 
 
-@blp.route("/sharePost", methods={"POST"})  #bu methodda clothes ve comments kısmı nasıl olacak. comments okey makeCommentten post id yapılır
-def share_post():
-    data = request.get_json()
-    user_id = data.get('user_id')
 
-    content = data.get('content')
-    clothes = data.get('clothes', [])  #list olduğu için? bunsuz da olur mu acaba
 
+@blp.route("/sharePost/<int:user_id>", methods=["POST"])
+def share_post(user_id):
+    content = request.form.get('content')
+
+    # Retrieve the user
     user = UserModel.query.get(user_id)
     if not user:
         return jsonify({'message': 'User not found'}), 404
 
-    comments = data.get('comments', [])  #yine list oldugu icin yaprm da gerek var mı kontrol edilmeli
+    # Handling image upload to S3
+    image_file = request.files.get('image')
+    image_url = None
+    if image_file:
+        # Generate a unique filename
+        filename = f"{uuid.uuid4().hex}-{image_file.filename}"
+        
+        try:
+            # Upload the file to S3
+            s3.upload_fileobj(image_file, S3_BUCKET, filename)
 
-    post = PostModel(content=content, user_id=user_id,comments=comments,author=user)
+            # Construct the image URL
+            image_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{filename}"
+        except Exception as e:
+            return jsonify({'message': 'Failed to upload image', 'error': str(e)}), 500
 
-    if clothes:
-        for clothe_id in clothes:
-            clothe = ClotheModel.query.get(clothe_id)
-            if clothe:
-                post.clothes.append(clothe)
-            else:
-                #eğer clothe yoksa sıkıntılı durum napıp nedip olmayan clothe girmemeli. şuan girmez gibi ama ilrede sıkıntı çıkarsa diye
-                continue
+    # Create a new post with the image URL
+    post = PostModel(content=content, user_id=user_id,image_url=image_url,author = user )
 
+    # Save the post to the database
     db.session.add(post)
     db.session.commit()
 

@@ -14,6 +14,7 @@ from models import ClotheModel
 s3_bp = Blueprint('s3', __name__)
 
 
+
 #S3 configuration
 S3_BUCKET = 'kombinle'
 s3 = boto3.client('s3',aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -84,7 +85,6 @@ aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 @s3_bp.route('/upload/<int:user_id>', methods=['POST'])
 def upload_file(user_id):
     file = request.files['file']
-    
     if not file:
             return jsonify({'error': 'No file part'}), 400
         
@@ -92,6 +92,20 @@ def upload_file(user_id):
         return jsonify({'error':'No selected file'})
     
     print(user_id)
+    
+   # Extract data and handle None values
+    color = request.form.get('color')
+    size = request.form.get('size')
+    brand = request.form.get('brand')
+    type = request.form.get('type')
+    sex = request.form.get('sex')
+
+    # Ensure that variables that are not provided are set to None
+    color = color if color is not None else None
+    size = size if size is not None else None
+    brand = brand if brand is not None else None
+    type = type if type is not None else None
+    sex = sex if sex is not None else None
   
     
     s3.upload_fileobj(file,S3_BUCKET,file.filename)
@@ -113,11 +127,11 @@ def upload_file(user_id):
      # Yeni ClotheModel nesnesi oluşturma
     new_clothe = ClotheModel(
         image_url=object_url,
-        color="",
-        size="",
-        brand="",
-        type="",
-        sex="",
+        color=color,
+        size=size,
+        brand=brand,
+        type=type,
+        sex=sex,
         user_id=user_id
     )
     db.session.add(new_clothe)
