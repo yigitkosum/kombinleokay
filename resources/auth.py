@@ -47,3 +47,29 @@ def delete_user(user_id):
 @auth_bp.route("/logout", methods=['DELETE'])
 def logout():
     return jsonify(msg="Successfully logged out"), 200
+
+
+@auth_bp.route('/setUser/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    user = UserModel.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    user_data = request.get_json()
+    
+    # Update user properties from the provided data
+    if 'username' in user_data:
+        user.username = user_data['username']
+    if 'name' in user_data:
+        user.name = user_data['name']
+    if 'surname' in user_data:
+        user.surname = user_data['surname']
+    if 'email' in user_data:
+        user.email = user_data['email']
+    if 'password' in user_data:
+        # Hash the new password before storing it
+        user.password = pbkdf2_sha256.hash(user_data['password'])
+    
+    db.session.commit()
+    
+    return jsonify(user.to_dict()), 200  # Return the updated user data
