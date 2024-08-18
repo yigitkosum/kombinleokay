@@ -24,7 +24,6 @@ class ClotheModel(db.Model):
             'sex': self.sex,
             'vote': self.vote,
             'image_url': self.image_url,
-            'outfits': [outfit.id for outfit in self.outfits]  # Bu giysinin ait olduğu outfit'lerin ID'leri
         }
 
     @classmethod

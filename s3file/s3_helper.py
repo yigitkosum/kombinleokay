@@ -14,7 +14,6 @@ from models import ClotheModel
 s3_bp = Blueprint('s3', __name__)
 
 
-
 #S3 configuration
 S3_BUCKET = 'kombinle'
 s3 = boto3.client('s3',aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -149,3 +148,40 @@ def get_image(filename):
         return send_file(file_stream, mimetype='image/jpeg'),200
     except Exception as e:
         return jsonify({'error': str(e)}), 404
+    
+
+@s3_bp.route('/create_outfit/<int:user_id>', methods=['POST'])
+def create_outfit(user_id):
+    try:
+        # Giysi ID'lerini ve dosyayı al
+        clothe_ids = request.form.getlist('clothe_ids')  # Get a list of clothe IDs
+        file = request.files.get('file')  # Use get to avoid KeyError
+
+        if not file:
+            return jsonify({'error': 'File is required'}), 400
+
+        # Dosyayı S3'e yükle
+        s3.upload_fileobj(file, S3_BUCKET, file.filename)
+        object_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{file.filename}"
+
+
+        # Giysi ID'lerini virgülle ayrılmış bir stringe dönüştür
+        #clothe_ids_str = ','.join(clothe_ids)
+
+        new_outfit_dict = {
+            "id": None,  # ID'siz oluşturulur, veritabanı tarafından atanır
+            "user_id": user_id,
+            "image_url": object_url,
+            "clothes_in_outfits": clothe_ids
+        }
+
+        new_outfit = Outfit.from_dict(new_outfit_dict)
+        db.session.add(new_outfit)
+        db.session.commit()
+
+        return jsonify({'message': 'Outfit created successfully', 'outfit': new_outfit.to_dict()}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    

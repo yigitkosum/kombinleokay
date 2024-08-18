@@ -1,7 +1,5 @@
 from flask_smorest import Blueprint
 from db import db
-from models import UserModel
-
 from models.follow import FollowModel
 from flask import request, jsonify
 from models.post import PostModel
@@ -9,11 +7,10 @@ from models.Clothe import ClotheModel
 import boto3
 import uuid
 from models import UserModel, PostModel, ClotheModel
-from flask_smorest import Blueprint
+from datetime import datetime, timedelta
 
 blp = Blueprint("SocialMedia", __name__, description="Operations on social media")
 
-#s3 file upload
 
 
 
@@ -113,3 +110,49 @@ def share_post(user_id):
     db.session.commit()
 
     return jsonify(post.to_dict()), 201
+
+
+@blp.route("/exploreUser", methods=["POST"])
+def explore():
+    data = request.get_json()
+
+    query = data.get('q', '') if data else ''
+
+    if not query:
+        return jsonify({'message': 'Query parameter is required'}), 400
+
+    # Search for users whose names, surnames, or usernames contain the query string
+    results = UserModel.query.filter(
+        (UserModel.name.ilike(f"%{query}%")) |
+        (UserModel.surname.ilike(f"%{query}%")) |
+        (UserModel.username.ilike(f"%{query}%"))
+    ).all()
+
+    if not results:
+        return jsonify({'message': 'No users found'}), 404
+
+    return jsonify([user.to_dict() for user in results]), 200
+
+
+
+@blp.route("/exploreFollowingPosts/<int:user_id>", methods=["GET"])
+def exploreFollowingPosts(user_id):
+    # Retrieve the user
+    user = UserModel.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    
+    # Get the list of user IDs that the current user is following
+    followed_user_ids = [followed.followed_id for followed in user.following]
+    
+    # Calculate the date 4 days ago
+    four_days_ago = datetime.now() - timedelta(days=4)
+    
+    # Query for posts from followed users in the last 4 days
+    posts = PostModel.query.filter(
+        PostModel.user_id.in_(followed_user_ids),
+        PostModel.timestamp >= four_days_ago
+    ).all()
+    
+    # Return the list of posts
+    return jsonify([post.to_dict() for post in posts]), 200
