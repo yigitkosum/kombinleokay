@@ -37,6 +37,8 @@ class UserModel(db.Model):
     combinations = db.relationship('CombinationModel', back_populates='user', lazy='dynamic')
     survey = db.Column(ARRAY(db.Float), default=[])
     saved_posts = db.relationship('PostModel', secondary="saved_posts", backref=db.backref('saved_by_users', lazy='dynamic'))
+    outfits = db.relationship('OutfitModel', backref='outfit_owner', lazy='dynamic')
+    
     
     def to_dict(self):
         return {
