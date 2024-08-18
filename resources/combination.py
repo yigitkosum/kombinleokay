@@ -298,8 +298,8 @@ def get_recommendation_phi():
     clothes_prompt = " - ".join(clothes_list)
 
     # Construct the prompt
-    prompt = f"Suggest 2 outfits from the following clothes, ensuring each outfit includes at least one upper, one lower, and one pair of shoes. \
-    Just give them as 3 consecutive numbers. Do not write anything else than numbers and commas. Do not use the same clothes in different outfits. \
+    prompt = f"Suggest 2 outfits from the following clothes, ensuring each outfit includes at least one upper (T-shirt, Sweatshirt, Shirt), one lower (Pant, Short), and one pair of shoes. According to prompt you have to include one jacket too.\
+    Just give them as 3 (4 if jacket is included) consecutive numbers. Do not write anything else than numbers and commas. Do not use the same clothes in different outfits. \
     Clothes: {clothes_prompt} \
     Prompt: {user_prompt}"
     print(clothes_prompt)
