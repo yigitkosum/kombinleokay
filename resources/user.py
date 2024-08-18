@@ -72,12 +72,11 @@ def user_addItem(user_id):
     return new_item.to_dict()
     
 def create_combinations(new_item):
-
     user = UserModel.query.get(new_item.user_id)
-    
-  
-    if new_item.type == 'T-shirt':
-        bottoms = user.clothes.filter_by(type='Pant').all()
+
+   
+    if new_item.type in ['T-shirt', 'Shirt', 'Sweatshirt']:
+        bottoms = user.clothes.filter_by(type='Pant').all() + user.clothes.filter_by(type='Short').all()
         shoes = user.clothes.filter_by(type='Shoe').all()
         jackets = user.clothes.filter_by(type='Jacket').all()
 
@@ -89,7 +88,7 @@ def create_combinations(new_item):
                     'bottom_id': bottom.id,
                     'shoe_id': shoe.id,
                     'jacket_id': None,
-                    'rating' : None
+                    'rating': None
                 }
                 combination = CombinationModel.from_dict(combination_data)
                 db.session.add(combination)
@@ -101,13 +100,13 @@ def create_combinations(new_item):
                         'bottom_id': bottom.id,
                         'shoe_id': shoe.id,
                         'jacket_id': jacket.id,
-                        'rating' : None
+                        'rating': None
                     }
                     combination_with_jacket = CombinationModel.from_dict(combination_with_jacket_data)
                     db.session.add(combination_with_jacket)
 
-    elif new_item.type == 'Pant':
-        tops = user.clothes.filter_by(type='T-shirt').all()
+    elif new_item.type in ['Pant', 'Short']:
+        tops = user.clothes.filter_by(type='T-shirt').all() + user.clothes.filter_by(type='Shirt').all() + user.clothes.filter_by(type='Sweatshirt').all()
         shoes = user.clothes.filter_by(type='Shoe').all()
         jackets = user.clothes.filter_by(type='Jacket').all()
 
@@ -119,7 +118,7 @@ def create_combinations(new_item):
                     'bottom_id': new_item.id,
                     'shoe_id': shoe.id,
                     'jacket_id': None,
-                    'rating' : None
+                    'rating': None
                 }
                 combination = CombinationModel.from_dict(combination_data)
                 db.session.add(combination)
@@ -131,14 +130,14 @@ def create_combinations(new_item):
                         'bottom_id': new_item.id,
                         'shoe_id': shoe.id,
                         'jacket_id': jacket.id,
-                        'rating' : None
+                        'rating': None
                     }
                     combination_with_jacket = CombinationModel.from_dict(combination_with_jacket_data)
                     db.session.add(combination_with_jacket)
 
     elif new_item.type == 'Shoe':
-        tops = user.clothes.filter_by(type='T-shirt').all()
-        bottoms = user.clothes.filter_by(type='Pant').all()
+        tops = user.clothes.filter_by(type='T-shirt').all() + user.clothes.filter_by(type='Shirt').all() + user.clothes.filter_by(type='Sweatshirt').all()
+        bottoms = user.clothes.filter_by(type='Pant').all() + user.clothes.filter_by(type='Short').all()
         jackets = user.clothes.filter_by(type='Jacket').all()
 
         for top in tops:
@@ -149,7 +148,7 @@ def create_combinations(new_item):
                     'bottom_id': bottom.id,
                     'shoe_id': new_item.id,
                     'jacket_id': None,
-                    'rating' : None
+                    'rating': None
                 }
                 combination = CombinationModel.from_dict(combination_data)
                 db.session.add(combination)
@@ -161,14 +160,14 @@ def create_combinations(new_item):
                         'bottom_id': bottom.id,
                         'shoe_id': new_item.id,
                         'jacket_id': jacket.id,
-                        'rating' : None
+                        'rating': None
                     }
                     combination_with_jacket = CombinationModel.from_dict(combination_with_jacket_data)
                     db.session.add(combination_with_jacket)
 
     elif new_item.type == 'Jacket':
-        tops = user.clothes.filter_by(type='T-shirt').all()
-        bottoms = user.clothes.filter_by(type='Pant').all()
+        tops = user.clothes.filter_by(type='T-shirt').all() + user.clothes.filter_by(type='Shirt').all() + user.clothes.filter_by(type='Sweatshirt').all()
+        bottoms = user.clothes.filter_by(type='Pant').all() + user.clothes.filter_by(type='Short').all()
         shoes = user.clothes.filter_by(type='Shoe').all()
 
         for top in tops:
@@ -180,15 +179,17 @@ def create_combinations(new_item):
                         'bottom_id': bottom.id,
                         'shoe_id': shoe.id,
                         'jacket_id': new_item.id,
-                        'rating' : None
+                        'rating': None
                     }
                     combination = CombinationModel.from_dict(combination_data)
                     db.session.add(combination)
 
+    
+
     db.session.commit()
 
 
-# DOKUNULMADI DURSUN BAKACAGIM
+# DOKUNULMADI DURSUN BAKACAGIM 
 @blp.route("/user/deleteItem/<int:item_id>", methods=["DELETE"])
 def user_deleteItem(item_id):
     # Find the item by its ID

@@ -14,6 +14,7 @@ from models import ClotheModel
 s3_bp = Blueprint('s3', __name__)
 
 
+
 #S3 configuration
 S3_BUCKET = 'kombinle'
 s3 = boto3.client('s3',aws_access_key_id=AWS_ACCESS_KEY_ID,
