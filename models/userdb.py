@@ -51,7 +51,7 @@ class UserModel(db.Model):
             'following': [followed.followed_id for followed in self.following],
             'combinations': [combination.to_dict() for combination in self.combinations.all()],
             'survey' : self.survey,
-            'saved_posts': [post.to_dict() for post in self.saved_posts.all()]
+            "saved_posts": [post.to_dict() for post in self.saved_posts]
         }
 
     @classmethod

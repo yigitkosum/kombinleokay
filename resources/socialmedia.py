@@ -4,11 +4,10 @@ from models.follow import FollowModel
 from flask import request, jsonify
 import boto3
 import uuid
-from models import UserModel, PostModel
+from models import UserModel, PostModel, CommentModel
 from datetime import datetime, timedelta
 
 blp = Blueprint("SocialMedia", __name__, description="Operations on social media")
-
 
 
 S3_BUCKET = 'kombinle'
@@ -212,3 +211,28 @@ def unsave_post():
 
 
 
+@blp.route('/makeComment/<int:user_id>/<int:post_id>', methods=["POST"])
+def make_comment(user_id, post_id):
+    data = request.get_json()
+
+    content = data.get('content')
+
+    if not content:
+        return jsonify({'message': 'Content is required'}), 400
+
+    # Retrieve the user and post
+    user = UserModel.query.get(user_id)
+    post = PostModel.query.get(post_id)
+
+    if not user or not post:
+        return jsonify({'message': 'User or Post not found'}), 404
+
+    # Create a new comment
+    comment = CommentModel(content=content, user_id=user_id, post_id=post_id)
+
+    # Save the comment to the database
+    db.session.add(comment)
+    db.session.commit()
+
+    return jsonify(comment.to_dict()), 201
+    
