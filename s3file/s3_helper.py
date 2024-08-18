@@ -4,6 +4,7 @@ from flask_smorest import Blueprint
 from io import BytesIO
 from db import db
 from models import Outfit
+from models import UserModel
 from models import ClotheModel
 
 
@@ -182,4 +183,18 @@ def create_outfit(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
-    
+
+@s3_bp.route('/upload_profile_pic/<int:user_id>', methods=['POST'])
+def upload_profile_pic(user_id):
+    print(request.files)
+    file = request.files.get('file')  # Use get to avoid KeyError
+    if not file:
+        return jsonify({'error': 'File is required'}), 400
+
+    # Dosyayı S3'e yükle
+    s3.upload_fileobj(file, S3_BUCKET, file.filename)
+    object_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{file.filename}"
+    user = UserModel.query.filter_by(id=user_id).first()
+    user.profile_pic = object_url
+    db.session.commit()
+    return jsonify({'message': 'Profile picture uploaded successfully'}), 200
