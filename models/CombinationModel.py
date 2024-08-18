@@ -9,7 +9,8 @@ class CombinationModel(db.Model):
     bottom_id = db.Column(db.Integer, db.ForeignKey("clothes.id"), nullable=False)
     shoe_id = db.Column(db.Integer, db.ForeignKey("clothes.id"), nullable=False)
     jacket_id = db.Column(db.Integer, db.ForeignKey("clothes.id"), nullable=True)
-    rating = db.Column(db.Float, nullable=True)  
+    rating = db.Column(db.Float, nullable=True)
+    image_url = db.Column(db.String(255))
 
     user = db.relationship("UserModel", back_populates="combinations")
     top = db.relationship("ClotheModel", foreign_keys=[top_id])

@@ -9,10 +9,10 @@ class ClotheModel(db.Model):
     type = db.Column(db.String(50))
     sex = db.Column(db.String(50), default="Unisex")
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('UserModel', back_populates='clothes', lazy=True, overlaps="owner")
+    user = db.relationship('UserModel', back_populates='clothes', lazy=True)
     image_url = db.Column(db.String(255))
     vote = db.Column(db.Boolean, default=False)
-    
+
     def to_dict(self):
         return {
             'user_id': self.user_id,
@@ -24,13 +24,13 @@ class ClotheModel(db.Model):
             'sex': self.sex,
             'vote': self.vote,
             'image_url': self.image_url,
+            'outfits': [outfit.id for outfit in self.outfits]  # Bu giysinin ait olduğu outfit'lerin ID'leri
         }
 
     @classmethod
     def from_dict(cls, data):
         return cls(
             user_id=data.get('user_id'),
-            id=data.get('id'),
             color=data.get('color'),
             size=data.get('size'),
             brand=data.get('brand'),
