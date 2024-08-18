@@ -3,14 +3,11 @@ import boto3
 from flask_smorest import Blueprint
 from io import BytesIO
 from db import db
+from models import Outfit
 from models import ClotheModel
-# import tensorflow as tf
-# from tensorflow.keras.models import load_model
-# from tensorflow.keras.preprocessing.image import load_img, img_to_array
-# import numpy as np
-# import os
-# from PIL import Image
-# import tempfile
+
+
+
 s3_bp = Blueprint('s3', __name__)
 
 

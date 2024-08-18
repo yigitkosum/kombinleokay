@@ -2,6 +2,14 @@ from db import db
 from passlib.hash import pbkdf2_sha256
 from sqlalchemy.dialects.postgresql import ARRAY
 
+
+
+
+saved_posts = db.Table('saved_posts',
+                       db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+                       db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
+                       )
+
 class UserModel(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -28,6 +36,7 @@ class UserModel(db.Model):
     )
     combinations = db.relationship('CombinationModel', back_populates='user', lazy='dynamic')
     survey = db.Column(ARRAY(db.Float), default=[])
+    saved_posts = db.relationship('PostModel', secondary="saved_posts", backref=db.backref('saved_by_users', lazy='dynamic'))
     
     def to_dict(self):
         return {
@@ -41,7 +50,8 @@ class UserModel(db.Model):
             'followers': [follower.follower_id for follower in self.followers],
             'following': [followed.followed_id for followed in self.following],
             'combinations': [combination.to_dict() for combination in self.combinations.all()],
-            'survey' : self.survey
+            'survey' : self.survey,
+            'saved_posts': [post.to_dict() for post in self.saved_posts.all()]
         }
 
     @classmethod
@@ -56,4 +66,7 @@ class UserModel(db.Model):
             
         )
         return user
+
+
+
     

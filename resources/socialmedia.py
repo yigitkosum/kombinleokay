@@ -2,15 +2,12 @@ from flask_smorest import Blueprint
 from db import db
 from models.follow import FollowModel
 from flask import request, jsonify
-from models.post import PostModel
-from models.Clothe import ClotheModel
 import boto3
 import uuid
-from models import UserModel, PostModel, ClotheModel
+from models import UserModel, PostModel
 from datetime import datetime, timedelta
 
 blp = Blueprint("SocialMedia", __name__, description="Operations on social media")
-
 
 
 
@@ -156,3 +153,62 @@ def exploreFollowingPosts(user_id):
     
     # Return the list of posts
     return jsonify([post.to_dict() for post in posts]), 200
+
+
+
+@blp.route('/savePost', methods=['POST'])
+def save_post():
+    data = request.get_json()
+
+    user_id = data.get('user_id')
+    post_id = data.get('post_id')
+
+    user = UserModel.query.get(user_id)
+    post = PostModel.query.get(post_id)
+
+    if not user or not post:
+        return jsonify({'message': 'User or Post not found'}), 404
+
+    if post in user.saved_posts:
+        return jsonify({'message': 'Post already saved by this user'}), 400
+
+    user.saved_posts.append(post)
+    db.session.commit()
+
+    return jsonify({'message': 'Post saved successfully'}), 200
+
+
+@blp.route('/getAllSavePosts/<int:user_id>', methods=['GET'])
+def get_all_saved_posts(user_id):
+    user = UserModel.query.get(user_id)
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    saved_posts = [post.to_dict() for post in user.saved_posts]
+
+    return jsonify(saved_posts), 200
+
+@blp.route('/unsavePost', methods=['POST'])
+def unsave_post():
+    data = request.get_json()
+
+    user_id = data.get('user_id')
+    post_id = data.get('post_id')
+
+    user = UserModel.query.get(user_id)
+    post = PostModel.query.get(post_id)
+
+    if not user or not post:
+        return jsonify({'message': 'User or Post not found'}), 404
+
+    if post not in user.saved_posts:
+        return jsonify({'message': 'Post not saved by this user'}), 400
+
+    user.saved_posts.remove(post)
+    db.session.commit()
+
+    return jsonify({'message': 'Post unsaved successfully'}), 200
+
+
+
