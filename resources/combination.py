@@ -286,10 +286,19 @@ allowSelfSignedHttps(True)
 def get_recommendation_phi():
     user_id = request.json.get("user_id")
     user_prompt = request.json.get("user_prompt")
+    
+    
+    isWinter = False
+    if "cold" or "cool" or "chilly" or "winter" or "Winter" or "Cool" or "Cold" in user_prompt :
+        isWinter = True
         
-    # Retrieve the user's clothes from ClotheModel
-    user_clothes = ClotheModel.query.filter_by(user_id=user_id).all()
-
+        
+    if isWinter:    
+        # Retrieve the user's clothes from ClotheModel
+        user_clothes = ClotheModel.query.filter_by(user_id=user_id).all()
+    else:
+        user_clothes = ClotheModel.query.filter_by(user_id=user_id).filter(ClotheModel.type != "Jacket").all()
+    
     # Format clothes for the prompt
     clothes_list = []
     for i, cloth in enumerate(user_clothes, 1):
@@ -297,12 +306,24 @@ def get_recommendation_phi():
 
     clothes_prompt = " - ".join(clothes_list)
 
-    # Construct the prompt
-    prompt = f"Suggest 2 outfits from the following clothes, ensuring each outfit includes at least one upper (T-shirt, Sweatshirt, Shirt), one lower (Pant, Short), and one pair of shoes. According to prompt you have to include one jacket too.\
-    Just give them as 3 (4 if jacket is included) consecutive numbers. Do not write anything else than numbers and commas. Do not use the same clothes in different outfits. \
-    Clothes: {clothes_prompt} \
-    Prompt: {user_prompt}"
-    print(clothes_prompt)
+    if isWinter:    
+        # Construct the prompt
+        prompt = f"Suggest 2 outfits from the following clothes, ensuring each outfit includes at least one upper (T-shirt, Sweatshirt, Shirt), one lower (Pant, Short), one Jacket and one Shoe. \
+        Just give them as 4 consecutive numbers. Do not write anything else than numbers and commas. Do not use the same clothes in different outfits. \
+        Clothes: {clothes_prompt} \
+        Prompt: {user_prompt}"
+        print(clothes_prompt)
+    else:
+       # Construct the prompt
+        prompt = f"Suggest 2 outfits from the following clothes, ensuring each outfit includes at least one upper (T-shirt, Sweatshirt, Shirt), one lower (Pant, Short), and one Shoe. \
+        Just give them as 3 consecutive numbers. Do not write anything else than numbers and commas. Do not use the same clothes in different outfits. \
+        Clothes: {clothes_prompt} \
+        Prompt: {user_prompt}"
+        print(clothes_prompt)
+       
+    
+
+    
 
     # Prepare the data for the API request
     data = {
