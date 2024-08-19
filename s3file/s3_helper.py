@@ -206,3 +206,20 @@ def upload_profile_pic(user_id):
     user.profile_pic = object_url
     db.session.commit()
     return jsonify({'message': 'Profile picture uploaded successfully'}), 200
+
+@s3_bp.route('/getOutfit/<int:user_id>', methods=['GET'])
+def get_outfit(user_id):
+    try:
+        # Query the database for outfits associated with the given user ID
+        outfits = Outfit.query.filter_by(user_id=user_id).all()
+        
+        if not outfits:
+            return jsonify({'message': 'No outfits found for this user'}), 404
+        
+        # Convert outfits to a list of dictionaries
+        outfits_list = [outfit.to_dict() for outfit in outfits]
+        
+        return jsonify({'outfits': outfits_list}), 200
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
