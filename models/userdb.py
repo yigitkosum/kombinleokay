@@ -17,7 +17,7 @@ class UserModel(db.Model):
     surname = db.Column(db.String(80))
     email = db.Column(db.String(80))
     clothes = db.relationship('ClotheModel', backref='owner', lazy='dynamic')
-    posts = db.relationship('PostModel', back_populates='author', lazy='dynamic', overlaps="user")
+    posts = db.relationship('PostModel', backref='author', lazy='dynamic')
     followers = db.relationship(
         'FollowModel',
         foreign_keys='FollowModel.followed_id',
