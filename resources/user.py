@@ -315,33 +315,3 @@ def user_updateVote(item_id):
 
     db.session.commit()
     return item.to_dict(),200
-
-@blp.route('/create_outfit', methods=['POST'])
-def create_outfit():
-    try:
-        data = request.get_json()
-
-        user_id = data.get('user_id')
-        image_url = data.get('image_url')
-        clothe_ids = data.get('clothe_ids')  # Giysi ID'leri listesi
-
-        if not user_id or not image_url or not clothe_ids:
-            return jsonify({'error': 'user_id, image_url, and clothe_ids are required'}), 400
-
-        # Giysi ID'lerini virgülle ayrılmış bir stringe dönüştür
-        clothe_ids_str = ','.join(map(str, clothe_ids))
-
-        # Yeni bir Outfit oluştur
-        new_outfit = Outfit
-        new_outfit.user_id = user_id
-        new_outfit.image_url = image_url
-        new_outfit.clothe_ids = clothe_ids_str
-
-        db.session.add(new_outfit)
-        db.session.commit()
-
-        return jsonify({'message': 'Outfit created successfully', 'outfit': new_outfit.to_dict()}), 201
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500

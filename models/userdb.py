@@ -52,9 +52,9 @@ class UserModel(db.Model):
             'surname': self.surname,
             'email': self.email,
             'clothes': [clothe.to_dict() for clothe in self.clothes.all()],
-            'posts': [post.to_dict(depth = depth -1) for post in self.posts.all()],
+            'posts': [post.to_dict() for post in self.posts.all()],
             'followers': [follower.follower.to_dict(depth = depth-1) for follower in self.followers.all()],
-            'following': [followed.followed.to_dict() for followed in self.following.all()],
+            'following': [followed.followed.to_dict(depth = depth -1) for followed in self.following.all()],
             'combinations': [combination.to_dict() for combination in self.combinations.all()],
             'survey' : self.survey,
             "saved_posts": [post.to_dict() for post in self.saved_posts]
