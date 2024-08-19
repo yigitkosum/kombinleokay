@@ -35,10 +35,16 @@ class UserModel(db.Model):
     combinations = db.relationship('CombinationModel', back_populates='user', lazy='dynamic')
     survey = db.Column(ARRAY(db.Float), default=[])
     saved_posts = db.relationship('PostModel', secondary="saved_posts", backref=db.backref('saved_by_users', lazy='dynamic'))
-    outfits = db.relationship('OutfitModel', backref='outfit_owner', lazy='dynamic')
+    outfits = db.relationship('Outfit', backref='outfit_owner', lazy='dynamic')
     
     
-    def to_dict(self):
+    def to_dict(self,depth=1):
+        if depth == 0:
+            return {
+            'id': self.id,
+            'username': self.username,
+            # other simple fields
+        }
         return {
             'id': self.id,
             'username': self.username,
@@ -46,8 +52,8 @@ class UserModel(db.Model):
             'surname': self.surname,
             'email': self.email,
             'clothes': [clothe.to_dict() for clothe in self.clothes.all()],
-            'posts': [post.to_dict() for post in self.posts.all()],
-            'followers': [follower.follower.to_dict() for follower in self.followers.all()],
+            'posts': [post.to_dict(depth = depth -1) for post in self.posts.all()],
+            'followers': [follower.follower.to_dict(depth = depth-1) for follower in self.followers.all()],
             'following': [followed.followed.to_dict() for followed in self.following.all()],
             'combinations': [combination.to_dict() for combination in self.combinations.all()],
             'survey' : self.survey,
