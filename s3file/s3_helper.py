@@ -3,7 +3,7 @@ import boto3
 from flask_smorest import Blueprint
 from io import BytesIO
 from db import db
-from models import Outfit
+from models.Outfit import Outfit
 from models import UserModel
 from models import ClotheModel
 """
