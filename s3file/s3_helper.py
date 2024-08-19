@@ -229,11 +229,14 @@ def get_outfit(user_id):
         return jsonify({'error': str(e)}), 500
     
     
+
 def cluster_users_over(user_ratings, n_clusters):
+    # Ensure the data is numeric
+    user_ratings = user_ratings.applymap(lambda x: float(x) if isinstance(x, (int, float)) else 2.5)
+    
     kmeans = KMeans(n_clusters=n_clusters, random_state=0)
     clusters = kmeans.fit_predict(user_ratings.fillna(2.5))
     
-    # Create a dictionary with user IDs and their corresponding cluster assignments
     user_ids = user_ratings.index
     cluster_dict = dict(zip(user_ids, clusters))
     
@@ -272,3 +275,50 @@ def get_cluster_timeline(user_id):
     posts_dict = [post.to_dict() for post in posts]
     
     return jsonify(posts_dict)
+
+@s3_bp.route('/set_profile_pic/<int:user_id>', methods=['POST'])
+def set_profile_pic(user_id):
+    file = request.files.get('file')  # Use get to avoid KeyError
+    if not file:
+        return jsonify({'error': 'File is required'}), 400
+
+    # Upload the file to S3
+    s3.upload_fileobj(file, S3_BUCKET, file.filename)
+    object_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{file.filename}"
+
+    # Update the user profile picture URL in the database
+    user = UserModel.query.filter_by(id=user_id).first()
+    if user:
+        user.profile_pic = object_url
+        db.session.commit()
+        return jsonify({'message': 'Profile picture updated successfully'}), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404
+
+
+@s3_bp.route('/delete_profile_pic/<int:user_id>', methods=['DELETE'])
+def delete_profile_pic(user_id):
+    # Retrieve the user and current profile picture URL
+    user = UserModel.query.filter_by(id=user_id).first()
+    if not user or not user.profile_pic:
+        return jsonify({'error': 'User or profile picture not found'}), 404
+
+    # Extract filename from the profile picture URL
+    file_key = user.profile_pic.split('/')[-1]
+
+    # Delete the file from S3
+    s3.delete_object(Bucket=S3_BUCKET, Key=file_key)
+
+    # Clear the profile picture URL in the database
+    user.profile_pic = None
+    db.session.commit()
+
+    return jsonify({'message': 'Profile picture deleted successfully'}), 200
+
+@s3_bp.route('/get_profile_pic/<int:user_id>', methods=['GET'])
+def get_profile_pic(user_id):
+    user = UserModel.query.filter_by(id=user_id).first()
+    if user and user.profile_pic:
+        return jsonify({'profile_pic_url': user.profile_pic}), 200
+    else:
+        return jsonify({'error': 'User or profile picture not found'}), 404

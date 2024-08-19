@@ -16,8 +16,9 @@ class UserModel(db.Model):
     name = db.Column(db.String(80))
     surname = db.Column(db.String(80))
     email = db.Column(db.String(80))
+    profile_pic = db.Column(db.String(255))
     clothes = db.relationship('ClotheModel', backref='owner', lazy='dynamic')
-    posts = db.relationship('PostModel', backref='author', lazy='dynamic')
+    posts = db.relationship('PostModel', back_populates='author', lazy='dynamic',  overlaps="user")
     followers = db.relationship(
         'FollowModel',
         foreign_keys='FollowModel.followed_id',
@@ -57,7 +58,8 @@ class UserModel(db.Model):
             'following': [followed.followed.to_dict(depth = depth -1) for followed in self.following.all()],
             'combinations': [combination.to_dict() for combination in self.combinations.all()],
             'survey' : self.survey,
-            "saved_posts": [post.to_dict() for post in self.saved_posts]
+            "saved_posts": [post.to_dict() for post in self.saved_posts],
+            "profile_pic": self.profile_pic,
         }
 
     @classmethod
