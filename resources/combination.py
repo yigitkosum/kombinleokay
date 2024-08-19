@@ -112,13 +112,11 @@ def create_unified_user_ratings(user_id):
 
 
 
-
-
-
 def cluster_users(user_ratings, n_clusters):
     kmeans = KMeans(n_clusters=n_clusters, random_state=0)
     clusters = kmeans.fit_predict(user_ratings.fillna(2.5))
     return clusters
+
 
 def enhanced_similarity(user_ratings):
     cosine_sim = cosine_similarity(user_ratings.fillna(2.5))

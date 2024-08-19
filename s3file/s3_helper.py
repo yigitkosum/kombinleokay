@@ -1,4 +1,4 @@
-from flask import request, jsonify, send_file
+from flask import abort, request, jsonify, send_file
 import boto3
 from flask_smorest import Blueprint
 from io import BytesIO
@@ -6,6 +6,9 @@ from db import db
 from models.Outfit import Outfit
 from models import UserModel
 from models import ClotheModel
+from resources import combination
+from sklearn.cluster import KMeans
+
 """
 import tensorflow as tf
 from tensorflow.keras.models import load_model
@@ -18,6 +21,7 @@ import tempfile
 """
 
 s3_bp = Blueprint('s3', __name__)
+
 
 
 #S3 configuration
@@ -223,3 +227,48 @@ def get_outfit(user_id):
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+    
+def cluster_users_over(user_ratings, n_clusters):
+    kmeans = KMeans(n_clusters=n_clusters, random_state=0)
+    clusters = kmeans.fit_predict(user_ratings.fillna(2.5))
+    
+    # Create a dictionary with user IDs and their corresponding cluster assignments
+    user_ids = user_ratings.index
+    cluster_dict = dict(zip(user_ids, clusters))
+    
+    return cluster_dict
+
+@s3_bp.route('/get_cluster_timeline/<int:user_id>', methods=['GET'])
+def get_cluster_timeline(user_id):
+    # Survey Matrix ve Kullanıcı Değerlendirmeleri
+    survey_matrix = combination.create_survey_matrix()
+    print(survey_matrix)
+    
+    # Cluster İşlemleri ve Tahmin Hesaplama
+    n_clusters = 3  
+    clusters = cluster_users_over(survey_matrix, n_clusters)
+    print(clusters)
+    
+    # Check if the user_id is in the cluster dictionary
+    if user_id not in clusters:
+        abort(404, description="User ID not found in the cluster data.")
+    
+    # Find the cluster for the given user
+    user_cluster = clusters[user_id]
+    
+    # Find all users in the same cluster
+    users_in_cluster = [user for user, cluster in clusters.items() if cluster == user_cluster]
+    
+    # Retrieve posts for users in the same cluster
+    posts = []
+    for user_id in users_in_cluster:
+        user = UserModel.query.get(user_id)
+        if user:
+            user_posts = user.posts.all()
+            posts.extend(user_posts)
+    
+    # Convert posts to dictionary format for JSON response
+    posts_dict = [post.to_dict() for post in posts]
+    
+    return jsonify(posts_dict)
