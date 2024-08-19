@@ -3,8 +3,6 @@ from passlib.hash import pbkdf2_sha256
 from sqlalchemy.dialects.postgresql import ARRAY
 
 
-
-
 saved_posts = db.Table('saved_posts',
                        db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
                        db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
@@ -49,8 +47,8 @@ class UserModel(db.Model):
             'email': self.email,
             'clothes': [clothe.to_dict() for clothe in self.clothes.all()],
             'posts': [post.to_dict() for post in self.posts.all()],
-            'followers': [follower.follower_id for follower in self.followers],
-            'following': [followed.followed_id for followed in self.following],
+            'followers': [follower.follower.to_dict() for follower in self.followers.all()],
+            'following': [followed.followed.to_dict() for followed in self.following.all()],
             'combinations': [combination.to_dict() for combination in self.combinations.all()],
             'survey' : self.survey,
             "saved_posts": [post.to_dict() for post in self.saved_posts]
@@ -69,6 +67,8 @@ class UserModel(db.Model):
         )
         return user
 
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.outfits = db.relationship('Outfit', backref='outfit_owner', lazy='dynamic')
 
     

@@ -11,5 +11,3 @@ passlib
 boto3
 pandas
 scikit-learn 
-tensorflow
-numpy

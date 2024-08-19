@@ -6,7 +6,7 @@ from db import db
 from models import Outfit
 from models import UserModel
 from models import ClotheModel
-
+"""
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
@@ -15,10 +15,9 @@ import numpy as np
 import os
 
 import tempfile
-
+"""
 
 s3_bp = Blueprint('s3', __name__)
-
 
 
 #S3 configuration
@@ -27,7 +26,7 @@ s3 = boto3.client('s3',aws_access_key_id=AWS_ACCESS_KEY_ID,
 aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 
-
+"""
 # Load the saved model
 def recognizer(image_path):
     model_path = os.path.abspath('/app/s3file/clothes_recognizer.h5')
@@ -86,6 +85,7 @@ def recognizer(image_path):
     color = clothes[-2]
     model = clothes[-1]
     return color, model
+    """
 
 #upload to S3
 @s3_bp.route('/upload/<int:user_id>', methods=['POST'])
@@ -118,25 +118,25 @@ def upload_file(user_id):
     
     object_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{file.filename}"
     
-    # Download the file from S3 to a temporary location
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
-        s3.download_fileobj(S3_BUCKET, file.filename, tmp_file)
-        tmp_file_path = tmp_file.name
+  #  # Download the file from S3 to a temporary location
+  #  with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+  #      s3.download_fileobj(S3_BUCKET, file.filename, tmp_file)
+  #      tmp_file_path = tmp_file.name
     
-    try:
-        colorUp, modelUp = recognizer(tmp_file_path)
-    finally:
-        # Clean up the temporary file
-        os.remove(tmp_file_path)
+  #  try:
+  #      colorUp, modelUp = recognizer(tmp_file_path)
+  #  finally:
+  #      # Clean up the temporary file
+  #      os.remove(tmp_file_path)
 
 
      # Yeni ClotheModel nesnesi oluşturma
     new_clothe = ClotheModel(
         image_url=object_url,
-        color=colorUp,
+        color=color,
         size=size,
         brand=brand,
-        type=modelUp,
+        type=type,
         sex=sex,
         user_id=user_id
     )
